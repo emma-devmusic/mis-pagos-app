@@ -1,49 +1,62 @@
-import { nanoid } from '@reduxjs/toolkit'
-import type { Payment } from '../types/payment'
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+  updateDoc,
+  type DocumentData,
+  type QueryDocumentSnapshot,
+} from 'firebase/firestore'
+import type { Payment, PaymentStatus } from '../types/payment'
+import { firestore } from './firebaseClient'
 
-const initialPayments: Payment[] = [
-  {
-    id: nanoid(),
-    service: 'Servicio de internet',
-    amount: 18990,
-    dueDate: '2026-01-10',
-    status: 'pending',
-  },
-  {
-    id: nanoid(),
-    service: 'Electricidad Edenor',
-    amount: 42650,
-    dueDate: '2026-01-14',
-    status: 'pending',
-  },
-  {
-    id: nanoid(),
-    service: 'Agua AySA',
-    amount: 15220,
-    dueDate: '2025-12-28',
-    status: 'completed',
-  },
-  {
-    id: nanoid(),
-    service: 'Spotify Familiar',
-    amount: 2499,
-    dueDate: '2026-01-03',
-    status: 'completed',
-  },
-  {
-    id: nanoid(),
-    service: 'Seguro del auto',
-    amount: 67500,
-    dueDate: '2026-01-20',
-    status: 'pending',
-  },
-]
+const paymentsCollection = (userId: string) => collection(firestore, 'users', userId, 'payments')
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+export type PaymentWritePayload = {
+  service: string
+  amount: number
+  dueDate: string
+  status: PaymentStatus
+}
 
-export const fakePaymentsApi = {
-  async list(): Promise<Payment[]> {
-    await delay(600)
-    return initialPayments
+const mapDocToPayment = (snapshot: QueryDocumentSnapshot<DocumentData>): Payment => {
+  const data = snapshot.data() ?? {}
+  return {
+    id: snapshot.id,
+    service: data.service ?? 'Servicio',
+    amount: Number(data.amount ?? 0),
+    dueDate: data.dueDate ?? '',
+    status: data.status ?? 'pending',
+  }
+}
+
+export const firebasePaymentsApi = {
+  async list(userId: string): Promise<Payment[]> {
+    const q = query(paymentsCollection(userId), orderBy('createdAt', 'desc'))
+    const snapshots = await getDocs(q)
+    return snapshots.docs.map((docSnapshot) => mapDocToPayment(docSnapshot))
+  },
+  async create(userId: string, payload: PaymentWritePayload): Promise<Payment> {
+    const ref = await addDoc(paymentsCollection(userId), {
+      ...payload,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    })
+    return { id: ref.id, ...payload }
+  },
+  async update(userId: string, payment: Payment): Promise<Payment> {
+    const { id, ...rest } = payment
+    const paymentRef = doc(paymentsCollection(userId), id)
+    await updateDoc(paymentRef, { ...rest, updatedAt: serverTimestamp() })
+    return payment
+  },
+  async remove(userId: string, paymentId: string): Promise<string> {
+    const paymentRef = doc(paymentsCollection(userId), paymentId)
+    await deleteDoc(paymentRef)
+    return paymentId
   },
 }

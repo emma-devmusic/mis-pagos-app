@@ -1,27 +1,44 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { AuthUser, LoginRequest } from '../../types/auth'
-import { fakeAuthApi } from '../../services/firebaseAuth'
+import { firebaseAuthApi } from '../../services/firebaseAuth'
+import { updateUserProfileDocument } from '../../services/firebaseUsers'
+import type { RootState } from '../../store'
 
 export type AuthState = {
   user: AuthUser | null
   status: 'idle' | 'loading' | 'failed'
+  profileStatus: 'idle' | 'saving' | 'failed'
   error?: string
 }
 
 const initialState: AuthState = {
   user: null,
   status: 'idle',
+  profileStatus: 'idle',
 }
 
 export const loginWithEmail = createAsyncThunk<AuthUser, LoginRequest>('auth/loginWithEmail', async (credentials) => {
-  const user = await fakeAuthApi.login(credentials)
+  const user = await firebaseAuthApi.login(credentials)
   return user
 })
 
 export const logoutFromSession = createAsyncThunk('auth/logout', async () => {
-  await fakeAuthApi.logout()
+  await firebaseAuthApi.logout()
 })
+
+export const updateProfileInfo = createAsyncThunk<AuthUser, { fullName: string }, { state: RootState }>(
+  'auth/updateProfileInfo',
+  async ({ fullName }, { getState }) => {
+    const currentUser = getState().auth.user
+    if (!currentUser) {
+      throw new Error('No hay sesión activa.')
+    }
+    await firebaseAuthApi.updateDisplayName(fullName)
+    const updatedProfile = await updateUserProfileDocument(currentUser.uid, { fullName })
+    return updatedProfile
+  },
+)
 
 const authSlice = createSlice({
   name: 'auth',
@@ -48,6 +65,18 @@ const authSlice = createSlice({
       .addCase(logoutFromSession.fulfilled, (state) => {
         state.user = null
         state.status = 'idle'
+      })
+      .addCase(updateProfileInfo.pending, (state) => {
+        state.profileStatus = 'saving'
+        state.error = undefined
+      })
+      .addCase(updateProfileInfo.fulfilled, (state, action) => {
+        state.profileStatus = 'idle'
+        state.user = action.payload
+      })
+      .addCase(updateProfileInfo.rejected, (state, action) => {
+        state.profileStatus = 'failed'
+        state.error = action.error.message ?? 'No pudimos actualizar tu perfil'
       })
   },
 })

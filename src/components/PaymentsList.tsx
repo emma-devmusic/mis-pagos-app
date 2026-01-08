@@ -20,7 +20,7 @@ function PaymentsList({ payments, onToggleStatus }: PaymentsListProps) {
         <li key={payment.id} className="card payment-item">
           <div>
             <p className="payment-service">{payment.service}</p>
-            <p className="muted">Vence el {new Date(payment.dueDate).toLocaleDateString()}</p>
+            <p className="muted">Vence el {new Date(payment.dueDate).toLocaleDateString('es-AR')}</p>
           </div>
           <div className="payment-meta">
             <span className="amount">${payment.amount.toLocaleString('es-AR')}</span>

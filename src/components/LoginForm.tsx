@@ -7,6 +7,7 @@ import type { LoginRequest } from '../types/auth'
 const initialForm: LoginRequest = {
   fullName: '',
   email: '',
+  password: '',
   rememberMe: false,
 }
 
@@ -18,13 +19,14 @@ function LoginForm() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!formValues.fullName.trim() || !formValues.email.trim()) {
+    if (!formValues.fullName.trim() || !formValues.email.trim() || !formValues.password.trim()) {
       return
     }
     dispatch(
       loginWithEmail({
         fullName: formValues.fullName.trim(),
         email: formValues.email.trim(),
+        password: formValues.password.trim(),
         rememberMe: formValues.rememberMe,
       }),
     )
@@ -45,6 +47,16 @@ function LoginForm() {
             value={formValues.fullName}
             onChange={(event) => setFormValues({ ...formValues, fullName: event.target.value })}
             placeholder="Emma Martínez"
+            required
+          />
+        </label>
+        <label className="stack">
+          <span>Contraseña</span>
+          <input
+            type="password"
+            value={formValues.password}
+            onChange={(event) => setFormValues({ ...formValues, password: event.target.value })}
+            placeholder="••••••••"
             required
           />
         </label>
