@@ -59,7 +59,7 @@ function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     <section className="card login-card">
       <header>
         <p className="eyebrow">Mis Pagos</p>
-        <h1>Crea tu cuenta</h1>
+        <h1 className='text-3xl font-semibold'>Crea tu cuenta</h1>
         <p className="muted">Registra tus datos para empezar a gestionar tus servicios.</p>
       </header>
       <form className="stack" onSubmit={handleSubmit}>
@@ -115,7 +115,7 @@ function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
         </label>
         {validationError ? <p className="error-text">{validationError}</p> : null}
         {!validationError && authError ? <p className="error-text">{authError}</p> : null}
-        <button type="submit" disabled={authStatus === 'loading'}>
+        <button type="submit" disabled={authStatus === 'loading'} className='mt-2'>
           {authStatus === 'loading' ? 'Creando cuenta...' : 'Registrarme'}
         </button>
       </form>
