@@ -40,7 +40,7 @@ function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     <section className="card login-card">
       <header>
         <p className="eyebrow">Mis Pagos</p>
-        <h1>Inicia sesión</h1>
+        <h1 className="text-3xl font-semibold">Inicia sesión</h1>
         <p className="muted">Administra tus servicios pendientes desde un único lugar.</p>
       </header>
       <form className="stack" onSubmit={handleSubmit}>
