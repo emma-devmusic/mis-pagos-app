@@ -83,6 +83,20 @@ export const payServiceDebt = createAsyncThunk<Service, string, { state: RootSta
   },
 )
 
+/**
+ * Alterna el estado de pago de un servicio (pagado ↔ pendiente).
+ */
+export const toggleServicePaid = createAsyncThunk<Service, string, { state: RootState }>(
+  'services/togglePaid',
+  async (serviceId, { getState }) => {
+    const state = getState()
+    const userId = requireUserId(state)
+    const service = state.services.items.find((s) => s.id === serviceId)
+    if (!service) throw new Error(`Servicio no encontrado: ${serviceId}`)
+    return firebaseServicesApi.update(userId, { ...service, paid: !service.paid })
+  },
+)
+
 // ── Slice ──
 
 const servicesSlice = createSlice({
@@ -163,6 +177,20 @@ const servicesSlice = createSlice({
       .addCase(payServiceDebt.rejected, (state, action) => {
         state.mutationStatus = 'failed'
         state.error = action.error.message ?? 'No pudimos registrar el pago'
+      })
+      // togglePaid
+      .addCase(toggleServicePaid.pending, (state) => {
+        state.mutationStatus = 'loading'
+        state.error = undefined
+      })
+      .addCase(toggleServicePaid.fulfilled, (state, action) => {
+        state.mutationStatus = 'idle'
+        const index = state.items.findIndex((s) => s.id === action.payload.id)
+        if (index >= 0) state.items[index] = action.payload
+      })
+      .addCase(toggleServicePaid.rejected, (state, action) => {
+        state.mutationStatus = 'failed'
+        state.error = action.error.message ?? 'No pudimos actualizar el estado del servicio'
       })
       // reset on logout
       .addCase(logoutFromSession.fulfilled, () => createInitialState())

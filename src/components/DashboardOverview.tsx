@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { loadServices, payServiceDebt } from '../features/services/servicesSlice'
+import { loadServices, toggleServicePaid } from '../features/services/servicesSlice'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import Page from './Page'
 import PaymentFilters from './PaymentFilters'
@@ -23,14 +23,14 @@ function DashboardOverview() {
       const matchSearch = svc.name.toLowerCase().includes(search.toLowerCase())
       const matchStatus =
         statusFilter === 'all' ||
-        (statusFilter === 'pending' && svc.debtAmount > 0) ||
-        (statusFilter === 'completed' && svc.debtAmount === 0)
+        (statusFilter === 'pending' && !svc.paid) ||
+        (statusFilter === 'completed' && svc.paid)
       return matchSearch && matchStatus
     })
   }, [services, search, statusFilter])
 
   const totalDebt = filteredServices.reduce((total, svc) => total + svc.debtAmount, 0)
-  const pendingCount = filteredServices.filter((svc) => svc.debtAmount > 0).length
+  const pendingCount = filteredServices.filter((svc) => !svc.paid).length
   const isFetching = status === 'idle' || status === 'loading'
 
   const paymentsForDisplay = useMemo(() => {
@@ -40,7 +40,7 @@ function DashboardOverview() {
       // When debt is zero, show the regular monthly amount as reference
       amount: svc.debtAmount > 0 ? svc.debtAmount : svc.amount,
       dueDate: svc.dueDate ?? '',
-      status: (svc.debtAmount > 0 ? 'pending' : 'completed') as 'pending' | 'completed',
+      status: (svc.paid ? 'completed' : 'pending') as 'pending' | 'completed',
     }))
   }, [filteredServices])
 
@@ -91,7 +91,7 @@ function DashboardOverview() {
       {!isFetching && status !== 'failed' ? (
         <PaymentsList
           payments={paymentsForDisplay}
-          onToggleStatus={(id) => void dispatch(payServiceDebt(id))}
+          onToggleStatus={(id) => void dispatch(toggleServicePaid(id))}
         />
       ) : null}
     </Page>
