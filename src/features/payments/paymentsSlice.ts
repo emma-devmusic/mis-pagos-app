@@ -8,7 +8,7 @@ import type { RootState } from '../../store'
 export type PaymentsState = {
   items: Payment[]
   filters: PaymentFilters
-  status: 'idle' | 'loading' | 'failed'
+  status: 'idle' | 'loading' | 'succeeded' | 'failed'
   mutationStatus: 'idle' | 'loading' | 'failed'
   error?: string
 }
@@ -35,8 +35,7 @@ const requireUserId = (state: RootState) => {
 
 export const loadPayments = createAsyncThunk<Payment[], void, { state: RootState }>('payments/load', async (_, { getState }) => {
   const userId = requireUserId(getState())
-  const response = await firebasePaymentsApi.list(userId)
-  return response
+  return firebasePaymentsApi.list(userId)
 })
 
 export const createPayment = createAsyncThunk<Payment, PaymentWritePayload, { state: RootState }>(
@@ -98,7 +97,7 @@ const paymentsSlice = createSlice({
         state.error = undefined
       })
       .addCase(loadPayments.fulfilled, (state, action) => {
-        state.status = 'idle'
+        state.status = 'succeeded'
         state.items = action.payload
       })
       .addCase(loadPayments.rejected, (state, action) => {

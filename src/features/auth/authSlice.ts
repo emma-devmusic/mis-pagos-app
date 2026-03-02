@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
-import type { AuthUser, LoginRequest } from '../../types/auth'
+import type { AuthUser, LoginRequest, RegisterRequest } from '../../types/auth'
 import { firebaseAuthApi } from '../../services/firebaseAuth'
 import { updateUserProfileDocument } from '../../services/firebaseUsers'
 import type { RootState } from '../../store'
@@ -23,19 +23,28 @@ export const loginWithEmail = createAsyncThunk<AuthUser, LoginRequest>('auth/log
   return user
 })
 
+export const registerWithEmail = createAsyncThunk<AuthUser, RegisterRequest>('auth/registerWithEmail', async (payload) => {
+  const user = await firebaseAuthApi.register(payload)
+  return user
+})
+
 export const logoutFromSession = createAsyncThunk('auth/logout', async () => {
   await firebaseAuthApi.logout()
 })
 
-export const updateProfileInfo = createAsyncThunk<AuthUser, { fullName: string }, { state: RootState }>(
+export const updateProfileInfo = createAsyncThunk<
+  AuthUser,
+  { fullName: string; phone?: string; currency?: string; notificationsEnabled?: boolean },
+  { state: RootState }
+>(
   'auth/updateProfileInfo',
-  async ({ fullName }, { getState }) => {
+  async ({ fullName, phone, currency, notificationsEnabled }, { getState }) => {
     const currentUser = getState().auth.user
     if (!currentUser) {
       throw new Error('No hay sesión activa.')
     }
     await firebaseAuthApi.updateDisplayName(fullName)
-    const updatedProfile = await updateUserProfileDocument(currentUser.uid, { fullName })
+    const updatedProfile = await updateUserProfileDocument(currentUser.uid, { fullName, phone, currency, notificationsEnabled })
     return updatedProfile
   },
 )
@@ -50,6 +59,18 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(registerWithEmail.pending, (state) => {
+        state.status = 'loading'
+        state.error = undefined
+      })
+      .addCase(registerWithEmail.fulfilled, (state, action) => {
+        state.status = 'idle'
+        state.user = action.payload
+      })
+      .addCase(registerWithEmail.rejected, (state, action) => {
+        state.status = 'failed'
+        state.error = action.error.message ?? 'No pudimos crear tu cuenta'
+      })
       .addCase(loginWithEmail.pending, (state) => {
         state.status = 'loading'
         state.error = undefined

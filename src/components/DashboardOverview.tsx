@@ -1,11 +1,13 @@
 import { useMemo } from 'react'
 import { loadPayments, setSearchFilter, setStatusFilter, togglePaymentStatus } from '../features/payments/paymentsSlice'
 import { useAppDispatch, useAppSelector } from '../hooks'
+import Page from './Page'
 import PaymentFilters from './PaymentFilters'
 import PaymentsList from './PaymentsList'
 
 function DashboardOverview() {
   const dispatch = useAppDispatch()
+  const user = useAppSelector((state) => state.auth.user)
   const { items, filters, status, error } = useAppSelector((state) => state.payments)
 
   const filteredPayments = useMemo(() => {
@@ -18,22 +20,26 @@ function DashboardOverview() {
 
   const totalAmount = filteredPayments.reduce((total, payment) => total + payment.amount, 0)
   const pendingCount = filteredPayments.filter((payment) => payment.status === 'pending').length
-  const isFetching = status === 'loading' && items.length === 0
+  const isFetching = status === 'idle' || status === 'loading'
 
   return (
-    <>
+    <Page
+      eyebrow={user ? `Hola ${user.fullName}` : undefined}
+      title="Tus servicios"
+      description="Marca los pagos realizados y mantén tu flujo al día."
+    >
       <section className="highlights">
-        <div className="card highlight">
-          <p className="muted">Monto filtrado</p>
-          <p className="highlight-value">${totalAmount.toLocaleString('es-AR')}</p>
+        <div className="card highlight p-3!">
+          <p className="muted text-xs md:text-base">Monto filtrado</p>
+          <p className="highlight-value text-base! md:text-lg!">${totalAmount.toLocaleString('es-AR')}</p>
         </div>
-        <div className="card highlight">
-          <p className="muted">Pendientes</p>
-          <p className="highlight-value">{pendingCount}</p>
+        <div className="card highlight p-3!">
+          <p className="muted text-xs md:text-base">Pendientes</p>
+          <p className="highlight-value text-base! md:text-lg!">{pendingCount}</p>
         </div>
-        <div className="card highlight">
-          <p className="muted">Total resultados</p>
-          <p className="highlight-value">{filteredPayments.length}</p>
+        <div className="card highlight p-3!">
+          <p className="muted text-xs md:text-base">Resultados</p>
+          <p className="highlight-value text-base! md:text-lg!">{filteredPayments.length}</p>
         </div>
       </section>
 
@@ -60,10 +66,10 @@ function DashboardOverview() {
         </div>
       ) : null}
 
-      {status !== 'failed' ? (
+      {!isFetching && status !== 'failed' ? (
         <PaymentsList payments={filteredPayments} onToggleStatus={(id) => dispatch(togglePaymentStatus(id))} />
       ) : null}
-    </>
+    </Page>
   )
 }
 

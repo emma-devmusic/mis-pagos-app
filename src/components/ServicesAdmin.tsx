@@ -1,14 +1,16 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { createPayment, deletePayment, updatePayment } from '../features/payments/paymentsSlice'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import type { PaymentStatus } from '../types/payment.ts'
 import type { FormEvent } from 'react'
+import Page from './Page'
 
 const defaultDate = () => new Date().toISOString().slice(0, 10)
 
 function ServicesAdmin() {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const paymentsState = useAppSelector((state) => state.payments)
   const payments = paymentsState.items
   const [service, setService] = useState('')
@@ -88,12 +90,18 @@ function ServicesAdmin() {
   }
 
   return (
+    <Page
+      title="Administrar servicios"
+      description="Agrega nuevos servicios o archiva los que ya no formen parte de tu flujo."
+      onBack={() => navigate('/')}
+    >
     <section className="services-admin">
       <div className="card services-admin-form">
         <header>
-          <p className="eyebrow">Catálogo</p>
-          <h2>Administrar servicios</h2>
-          <p className="muted">Agrega nuevos servicios o archiva los que ya no formen parte de tu flujo.</p>
+          <div>
+            <p className="eyebrow">Catálogo</p>
+            <h2>Nuevo servicio</h2>
+          </div>
         </header>
         <form onSubmit={handleSubmit} className="services-admin-form-fields">
           <label className="stack">
@@ -148,9 +156,6 @@ function ServicesAdmin() {
             <h2>Servicios activos</h2>
             <p className="muted">Mantén el listado curado para que el dashboard se mantenga liviano.</p>
           </div>
-          <Link to="/" className="ghost">
-            Volver al dashboard
-          </Link>
         </header>
         {orderedPayments.length === 0 ? (
           <p className="muted">Todavía no cargaste servicios. Usa el formulario para empezar.</p>
@@ -182,6 +187,7 @@ function ServicesAdmin() {
         ) : null}
       </div>
     </section>
+    </Page>
   )
 }
 

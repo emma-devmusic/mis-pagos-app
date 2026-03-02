@@ -1,3 +1,4 @@
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap');
 
 :root {
@@ -22,10 +23,18 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  overflow-x: hidden;
 }
 
 #root {
   width: min(1200px, 100%);
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 0.75rem;
+  }
 }
 
 button,

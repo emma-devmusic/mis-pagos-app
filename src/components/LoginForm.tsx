@@ -11,7 +11,11 @@ const initialForm: LoginRequest = {
   rememberMe: false,
 }
 
-function LoginForm() {
+type LoginFormProps = {
+  onSwitchToRegister: () => void
+}
+
+function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   const dispatch = useAppDispatch()
   const authStatus = useAppSelector((state) => state.auth.status)
   const authError = useAppSelector((state) => state.auth.error)
@@ -83,6 +87,12 @@ function LoginForm() {
           {authStatus === 'loading' ? 'Ingresando...' : 'Entrar al dashboard'}
         </button>
       </form>
+      <footer className="form-switch">
+        <span>¿No tienes cuenta?</span>
+        <button type="button" className="link-button" onClick={onSwitchToRegister}>
+          Regístrate gratis
+        </button>
+      </footer>
     </section>
   )
 }

@@ -1,4 +1,6 @@
+
 import type { Payment } from '../types/payment'
+import ServiceCard from './ServiceCard'
 
 type PaymentsListProps = {
   payments: Payment[]
@@ -17,21 +19,7 @@ function PaymentsList({ payments, onToggleStatus }: PaymentsListProps) {
   return (
     <ul className="payments-list">
       {payments.map((payment) => (
-        <li key={payment.id} className="card payment-item">
-          <div>
-            <p className="payment-service">{payment.service}</p>
-            <p className="muted">Vence el {new Date(payment.dueDate).toLocaleDateString('es-AR')}</p>
-          </div>
-          <div className="payment-meta">
-            <span className="amount">${payment.amount.toLocaleString('es-AR')}</span>
-            <span className={`status ${payment.status}`}>
-              {payment.status === 'pending' ? 'Pendiente' : 'Pagado'}
-            </span>
-          </div>
-          <button type="button" onClick={() => onToggleStatus(payment.id)}>
-            {payment.status === 'pending' ? 'Marcar como pagado' : 'Marcar como pendiente'}
-          </button>
-        </li>
+        <ServiceCard key={payment.id} payment={payment} onToggleStatus={onToggleStatus} />
       ))}
     </ul>
   )

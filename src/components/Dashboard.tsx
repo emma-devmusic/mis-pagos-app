@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Navigate, NavLink, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { logoutFromSession } from '../features/auth/authSlice'
 import { loadPayments } from '../features/payments/paymentsSlice'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import DashboardOverview from './DashboardOverview.tsx'
-import ServicesAdmin from './ServicesAdmin.tsx'
+import Navbar from './Navbar.tsx'
+import ServiceFormView from './ServiceFormView.tsx'
+import ServicesAdminList from './ServicesAdminList.tsx'
+import Sidebar from './Sidebar.tsx'
 import UserProfile from './UserProfile.tsx'
 
 function Dashboard() {
@@ -26,81 +29,28 @@ function Dashboard() {
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
 
   return (
-    <section className="dashboard">
-      <div className="dashboard-toolbar">
-        <button
-          type="button"
-          className="ghost mobile-nav-toggle"
-          aria-controls={sidebarId}
-          aria-expanded={isMobileMenuOpen}
-          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-        >
-          Menú principal
-        </button>
-      </div>
+    <section className="dashboard max-w-full">
+      <Navbar
+        sidebarId={sidebarId}
+        isMenuOpen={isMobileMenuOpen}
+        onMenuToggle={() => setIsMobileMenuOpen((prev) => !prev)}
+      />
 
       <div className="dashboard-layout">
-        <aside
+        <Sidebar
           id={sidebarId}
-          className={`services-sidebar ${isMobileMenuOpen ? 'open' : ''}`}
-          aria-label="Navegación del panel"
-        >
-          <div className="sidebar-header">
-            <div>
-              <p className="eyebrow">Panel</p>
-              <h2>Servicios</h2>
-            </div>
-            <button type="button" className="ghost sidebar-close" onClick={closeMobileMenu}>
-              Cerrar
-            </button>
-          </div>
-          <nav className="sidebar-menu">
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-              onClick={closeMobileMenu}
-            >
-              <span>Resumen general</span>
-              <small>Estadísticas y pagos filtrados</small>
-            </NavLink>
-            <NavLink
-              to="/servicios"
-              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-              onClick={closeMobileMenu}
-            >
-              <span>Administrar servicios</span>
-              <small>Crear, editar o eliminar registros</small>
-            </NavLink>
-            <NavLink
-              to="/perfil"
-              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-              onClick={closeMobileMenu}
-            >
-              <span>Perfil del usuario</span>
-              <small>Datos personales y UID</small>
-            </NavLink>
-          </nav>
-        </aside>
+          isOpen={isMobileMenuOpen}
+          onClose={closeMobileMenu}
+          user={user}
+          onLogout={() => dispatch(logoutFromSession())}
+        />
 
         <div className="dashboard-content">
-          <header className="dashboard-header">
-            <div>
-              <p className="eyebrow">Hola {user?.fullName}</p>
-              <h1>Tus servicios</h1>
-              <p className="muted">Marca los pagos realizados y mantén tu flujo al día.</p>
-            </div>
-            <div className="header-actions">
-              <span className="muted">{user?.email}</span>
-              <button type="button" className="ghost" onClick={() => dispatch(logoutFromSession())}>
-                Cerrar sesión
-              </button>
-            </div>
-          </header>
-
           <Routes>
             <Route path="/" element={<DashboardOverview />} />
-            <Route path="/servicios" element={<ServicesAdmin />} />
+            <Route path="/servicios" element={<ServicesAdminList />} />
+            <Route path="/servicios/crear" element={<ServiceFormView />} />
+            <Route path="/servicios/editar/:id" element={<ServiceFormView />} />
             <Route path="/perfil" element={<UserProfile />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

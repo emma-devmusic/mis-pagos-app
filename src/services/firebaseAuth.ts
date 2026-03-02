@@ -10,7 +10,7 @@ import {
   type User as FirebaseUser,
 } from 'firebase/auth'
 import { FirebaseError } from 'firebase/app'
-import type { AuthUser, LoginRequest } from '../types/auth'
+import type { AuthUser, LoginRequest, RegisterRequest } from '../types/auth'
 import { firebaseAuth } from './firebaseClient'
 import { fetchUserProfile, upsertUserProfile } from './firebaseUsers'
 
@@ -39,6 +39,22 @@ const resolveAuthErrorMessage = (error: unknown): string => {
     }
   }
   return 'Algo salió mal al iniciar sesión.'
+}
+
+const resolveRegisterErrorMessage = (error: unknown): string => {
+  if (error instanceof FirebaseError) {
+    switch (error.code) {
+      case 'auth/email-already-in-use':
+        return 'Este correo ya tiene una cuenta creada.'
+      case 'auth/weak-password':
+        return 'La contraseña es demasiado débil para Firebase.'
+      case 'auth/operation-not-allowed':
+        return 'El registro con correo está deshabilitado en Firebase.'
+      default:
+        return 'No pudimos registrar tu cuenta con Firebase.'
+    }
+  }
+  return 'Algo salió mal al crear tu cuenta.'
 }
 
 const applyPersistence = async (rememberMe: boolean) => {
@@ -87,6 +103,16 @@ export const firebaseAuthApi = {
         return mapped
       }
       throw new Error(resolveAuthErrorMessage(error))
+    }
+  },
+  async register(payload: RegisterRequest): Promise<AuthUser> {
+    const fullName = [payload.firstName.trim(), payload.lastName.trim()].filter(Boolean).join(' ')
+    try {
+      await applyPersistence(true)
+      const result = await createUserWithEmailAndPassword(firebaseAuth, payload.email.trim(), payload.password)
+      return await syncUserProfile(result.user, fullName)
+    } catch (error) {
+      throw new Error(resolveRegisterErrorMessage(error))
     }
   },
   async logout(): Promise<void> {

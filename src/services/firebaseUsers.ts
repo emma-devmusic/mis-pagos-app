@@ -14,6 +14,9 @@ const mapSnapshotToUser = (uid: string, data?: DocumentData): AuthUser | null =>
     fullName: data.fullName ?? '',
     email: data.email ?? '',
     photoUrl: data.photoUrl ?? null,
+    phone: data.phone ?? '',
+    currency: data.currency ?? 'ARS',
+    notificationsEnabled: data.notificationsEnabled ?? true,
   }
 }
 
@@ -44,12 +47,18 @@ export const upsertUserProfile = async (profile: AuthUser): Promise<AuthUser> =>
   return profile
 }
 
-export const updateUserProfileDocument = async (uid: string, updates: { fullName: string }): Promise<AuthUser> => {
+export const updateUserProfileDocument = async (
+  uid: string,
+  updates: { fullName: string; phone?: string; currency?: string; notificationsEnabled?: boolean },
+): Promise<AuthUser> => {
   const ref = userDocRef(uid)
   await setDoc(
     ref,
     {
       fullName: updates.fullName,
+      ...(updates.phone !== undefined && { phone: updates.phone }),
+      ...(updates.currency !== undefined && { currency: updates.currency }),
+      ...(updates.notificationsEnabled !== undefined && { notificationsEnabled: updates.notificationsEnabled }),
       updatedAt: serverTimestamp(),
     },
     { merge: true },
