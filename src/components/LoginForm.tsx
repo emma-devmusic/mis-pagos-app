@@ -74,9 +74,10 @@ function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             required
           />
         </label>
-        <label className="checkbox">
+        <label className="flex items-center gap-2 mb-2 mt-0.5">
           <input
             type="checkbox"
+            className='w-fit!'
             checked={formValues.rememberMe}
             onChange={(event) => setFormValues({ ...formValues, rememberMe: event.target.checked })}
           />
