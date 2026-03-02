@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { logoutFromSession } from '../features/auth/authSlice'
-import { loadPayments } from '../features/payments/paymentsSlice'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import DashboardOverview from './DashboardOverview.tsx'
 import Navbar from './Navbar.tsx'
@@ -13,18 +12,8 @@ import UserProfile from './UserProfile.tsx'
 function Dashboard() {
   const dispatch = useAppDispatch()
   const user = useAppSelector((state) => state.auth.user)
-  const { items, status } = useAppSelector((state) => state.payments)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const sidebarId = 'services-sidebar'
-
-  useEffect(() => {
-    if (!user) {
-      return
-    }
-    if (status === 'idle' && items.length === 0) {
-      dispatch(loadPayments())
-    }
-  }, [dispatch, status, items.length, user])
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
 
