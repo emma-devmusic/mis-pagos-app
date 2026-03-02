@@ -97,7 +97,7 @@ function ServicesAdminList() {
                     </p>
                   )}
                 </div>
-                <div className="services-admin-list-actions">
+                <div className="services-admin-list-actions flex! gap-2! flex-nowrap!">
                   <span className={`status ${svc.active ? 'completed' : 'pending'}`}>
                     {svc.active ? 'Activo' : 'Inactivo'}
                   </span>
