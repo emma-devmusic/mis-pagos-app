@@ -29,8 +29,8 @@ function DashboardOverview() {
     })
   }, [services, search, statusFilter])
 
-  const totalDebt = filteredServices.reduce((total, svc) => total + svc.debtAmount, 0)
-  const pendingCount = filteredServices.filter((svc) => !svc.paid).length
+  const totalDebt = services.reduce((total, svc) => total + svc.debtAmount, 0)
+  const pendingCount = services.filter((svc) => !svc.paid).length
   const isFetching = status === 'idle' || status === 'loading'
 
   const paymentsForDisplay = useMemo(() => {
