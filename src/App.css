@@ -628,6 +628,11 @@ a.ghost {
   color: #7bd88a;
 }
 
+.status.overdue {
+  background: rgba(255, 100, 80, 0.2);
+  color: #ff6450;
+}
+
 @media (max-width: 720px) {
   .payment-item {
     grid-template-columns: 1fr;

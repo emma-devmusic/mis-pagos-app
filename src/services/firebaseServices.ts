@@ -27,6 +27,7 @@ const mapDocToService = (snapshot: QueryDocumentSnapshot<DocumentData>): Service
     ...(data.recurrence ? { recurrence: data.recurrence as Service['recurrence'] } : {}),
     ...(data.dueDate ? { dueDate: data.dueDate as string } : {}),
     active: data.active !== false, // default true
+    paid: Boolean(data.paid ?? false),
     // Campos de deuda – default en 0 si el documento aún no los tiene
     debtAmount: Number(data.debtAmount ?? 0),
     debtMonths: Number(data.debtMonths ?? 0),
@@ -44,13 +45,15 @@ export const firebaseServicesApi = {
   async create(userId: string, payload: ServiceWritePayload): Promise<Service> {
     const ref = await addDoc(servicesCollection(userId), {
       ...payload,
+      // Estado de pago inicial: pendiente
+      paid: false,
       // Deuda inicial en 0
       debtAmount: 0,
       debtMonths: 0,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     })
-    return { id: ref.id, ...payload, debtAmount: 0, debtMonths: 0 }
+    return { id: ref.id, ...payload, paid: false, debtAmount: 0, debtMonths: 0 }
   },
 
   async update(userId: string, service: Service): Promise<Service> {

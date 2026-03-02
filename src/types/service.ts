@@ -21,6 +21,8 @@ export type Service = {
   dueDate?: string
   /** Los servicios inactivos no acumulan deuda */
   active: boolean
+  /** true cuando el usuario marcó este período como pagado */
+  paid: boolean
 
   // ── Campos de deuda (gestionados por ensureMonthlyDebtForUser) ──
   /** Monto total de deuda acumulada sin pagar */
@@ -43,5 +45,5 @@ export type Service = {
  */
 export type ServiceWritePayload = Omit<
   Service,
-  'id' | 'debtAmount' | 'debtMonths' | 'lastBilledPeriod' | 'createdAt' | 'updatedAt'
+  'id' | 'paid' | 'debtAmount' | 'debtMonths' | 'lastBilledPeriod' | 'createdAt' | 'updatedAt'
 >
